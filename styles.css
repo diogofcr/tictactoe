@@ -1,0 +1,202 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --grid-cols: 1;
+    --grid-rows: 1;
+}
+
+#bg-image {
+    background: url("images/tvgziAU.jpg");
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: -1;
+    background-size: cover;
+}
+
+body {
+    font-family: "Roboto", Arial, Helvetica, sans-serif;
+    overflow-wrap: break-word;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                              supported by Chrome, Edge, Opera and Firefox */
+}
+
+main {
+    text-align: center;
+    background: url("images/white-paper-texture.jpg");
+    width: 50vw;
+    margin: auto;
+    border-radius: 5px;
+    position: relative;
+    top: 5vh;
+}
+
+h1 {
+    padding-top: 10px;
+    color: black;
+    font-size: 2.4em;
+}
+
+#pen {
+    position: absolute;
+    width: 30vw;
+    z-index: 3;
+    transform: rotate(-80deg) translate(-50%,100%);
+}
+
+#gameboard {
+    display: grid;
+    grid-template-rows: repeat(var(--grid-rows), 1fr);
+    grid-template-columns: repeat(var(--grid-cols), 1fr);
+    grid-gap: 0px;
+    width: 30vw;
+    height: 30vw;
+    margin: auto;
+    padding: 20px;
+}
+
+.grid-item {
+    border-top: 4px solid #5f5f5f;
+    border-left: 4px solid #5f5f5f;
+}
+
+[id="0"], [id="1"], [id="2"] {
+    border-top: none;
+}
+
+[id="0"], [id="3"], [id="6"] {
+    border-left: none;
+} 
+
+.X {background: url("images/X.png");}
+.O {background: url("images/O.png");}
+.X, .O {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+
+#gameover {
+    text-align: center;
+    z-index: 9;
+    background: url("images/white-paper-texture.jpg");
+    background-size: cover;
+    padding: 5px;
+    border-radius: 10px;
+    border: 1px solid#3e3e3ea3;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    animation: appear;
+    animation-duration: 0.5s;
+    width: 25vw;
+    height: 25vw;
+    font-size: 1.5vw;
+    cursor: pointer;
+}
+
+#choosename {
+    text-align: center;
+    z-index: 9;
+    background: url("images/white-paper-texture.jpg");
+    background-size: cover;
+    padding: 5px;
+    border-radius: 10px;
+    border: 1px solid#3e3e3ea3;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    width: 20vw;
+    font-size: 1vw;
+}
+#choosename input, #choosename h2, #choosename button {margin: 5px; padding: 5px;}
+#choosename h2 {color: black; text-shadow: 1px 1px #CDCDCD;}
+#choosename input {width: 50%;}
+#choosename button {
+    font-size: 1vw;
+    color: whitesmoke;
+    background-color:#a1a1a1;;
+    box-shadow: 2px 2px #CDCDCD;
+    border-radius: 20px;
+    border: 1px solid #ffffff8c;
+    outline: none;
+}
+
+#player1,#player2 {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 20%;
+    border-radius: 10px;
+    padding: 5px;
+    font-size: 1.2em;
+    margin: 1em;
+}
+
+#player1,#player2 p {
+    font-size: 1vw;
+}
+
+.scoreboard {
+    background-color: #ffffff8c;
+    box-shadow: 2px 2px #CDCDCD;
+}
+
+.flashing {
+    animation: flash;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+    
+}
+.Xdiv, .Odiv {
+    width: 15%;
+}
+
+#restart {
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 25px;
+    border: 1px solid #ffffff8c;
+    font-size: 1.5vw;
+    outline: none;
+    color: whitesmoke;
+    background-color: #a1a1a1;;
+    box-shadow: 2px 2px #CDCDCD;
+}
+
+#restart:hover, #done:hover {
+    background-color:#5a5a5a;
+  }
+
+@keyframes appear {
+    0%   {width: 0;height: 0;font-size: 0;}
+    100% {width: 25vw;height: 25vw;font-size: 1.5vw;}
+  }
+
+  @keyframes flash {
+    0%   {box-shadow: none;}
+    50% {box-shadow: 1px 1px #00cc00;}
+    100% {box-shadow: none;}
+  }
+
+
