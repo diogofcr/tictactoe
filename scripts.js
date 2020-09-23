@@ -157,6 +157,7 @@ const displayController = (() => {
                 (easyinput.checked) ? game.difficulty = "easy" : game.difficulty = "hard"; //If easy is checked set game.difficulty to easy, if not set it to hard
                 choose.remove(); //Remove the choose div
                 startGame(); //Add the scoreboard
+                document.getElementById("scoreboard").classList.add('after');
                 game.start();
             }
         });
@@ -278,7 +279,7 @@ const game = (() => {
 const AI = (() => {
     let _timer;
     const play = (player) => {
-        _timer = (game.difficulty==="easy") ? setTimeout(()=> {playRandom(player)}, 1500) : (playSmart(player))();
+        _timer = (game.difficulty==="easy") ? setTimeout(()=> {playRandom(player)}, 1500) : setTimeout(()=> {playSmart(player)}, 0);
     };
 
     const stopTimer = () => {
@@ -308,7 +309,6 @@ const AI = (() => {
         
         const options = getOptions(currentgameboard); //Makes an array listing all possible solutions where he can place his symbol
         if (options.length === 9) return playRandom(player); //If start of game choose random
-
         else {
             const choice = minimax(currentgameboard,player);
             let cell = document.getElementById(choice.position); //Gets the html element which has the ID of our choice
