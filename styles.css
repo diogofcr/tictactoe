@@ -212,7 +212,7 @@ main {
     transform: rotate(-80deg) translate(-50%,100%);
 }
 
-@media only screen and (max-width: 768px) and (orientation: portrait){
+@media only screen and (max-width: 768px) and (orientation: portrait) {
     main {
         width: 80vw;
         height: 80vw;
@@ -257,8 +257,4 @@ main {
     #choosename button {
         font-size: 3vw;
     }
-
-
-@media only screen and (min-width: 768px) {
-
 }
