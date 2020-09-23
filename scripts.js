@@ -9,7 +9,7 @@
         let cell = document.createElement("div");
         cell.id = c;
         gameboard.appendChild(cell).className = "grid-item";
-        cell.addEventListener("click", () => game.play(cell)); //Event listener hover on div
+        cell.addEventListener("click", () => game.choice(cell)); //Event listener hover on div
     };
 })(3, 3);
 
@@ -95,6 +95,7 @@ const displayController = (() => {
         document.getElementById("player1").classList.remove("flashing");
         document.getElementById("player2").classList.remove("flashing");
         turn ? document.getElementById("player1").classList.add("flashing") : document.getElementById("player2").classList.add("flashing");
+        if(!turn) AI.play(player2); //If turn==false (means it is AI turn) makes AI play
     };
 
     const updateScore = (symbol,score) => {
@@ -115,13 +116,51 @@ const displayController = (() => {
         let donebutton = document.createElement("button");
         donebutton.id = "done";
         donebutton.textContent = "Done";
-        //Append title and symbol to gameover div
+        //Create difficulty button
+        let difficultydiv = document.createElement("div");
+        let easydiv = document.createElement("div");
+        let easyinput = document.createElement("input");
+        let easylabel = document.createElement("label");
+        let harddiv = document.createElement("div");
+        let hardinput = document.createElement("input");
+        let hardlabel = document.createElement("label");
+        easydiv.appendChild(easyinput);
+        easydiv.appendChild(easylabel);
+        easydiv.id = "easydiv";
+        harddiv.appendChild(hardinput);
+        harddiv.appendChild(hardlabel);
+        harddiv.id = "harddiv";
+        difficultydiv.id = "difficultydiv";
+        difficultydiv.appendChild(easydiv);
+        difficultydiv.appendChild(harddiv);
+        easylabel.textContent = "Easy";
+        easylabel.setAttribute('for', 'easy');
+        easyinput.setAttribute('type', 'radio');
+        easyinput.id = "easy";
+        easyinput.setAttribute('name', 'difficulty');
+        hardlabel.textContent = "Hard";
+        hardlabel.setAttribute('for', 'hard');
+        hardinput.setAttribute('type', 'radio');
+        hardinput.id = "hard";
+        hardinput.setAttribute('name', 'difficulty');
+        //Append title and symbol to choose screen
         choose.appendChild(title);
         choose.appendChild(input);
+        choose.appendChild(difficultydiv);
         choose.appendChild(donebutton);
         //Append div to gameboard;
         document.getElementById("main").appendChild(choose);
-        donebutton.addEventListener("click", () => {if (input.value) {player1.name = input.value; choose.remove(); startGame(); game.start()}});
+        (easyinput.checked)
+        donebutton.addEventListener("click", () => {
+            if (input.value && (easyinput.checked || hardinput.checked)) {
+                player1.name = input.value;
+                (easyinput.checked) ? game.difficulty = "easy" : game.difficulty = "hard"; //If easy is checked set game.difficulty to easy, if not set it to hard
+                choose.remove(); //Remove the choose div
+                startGame(); //Add the scoreboard
+                game.start();
+            }
+        });
+
     })();
 
     return {update,clear,gameOver,changeTurn,updateScore}
@@ -132,10 +171,8 @@ const gameBoard = (() => { //Current gameboard values
     const _gameBoard = [null,null,null,null,null,null,null,null,null];
     
     const changeValue = (symbol,position) => { //Changes value of that gameBoard position to the player symbol
-        if (!_gameBoard[position.id]) { //Only change the value if that gameboard position is null
-            _gameBoard[position.id] = symbol;
-            displayController.update(symbol,position);
-        }
+        _gameBoard[position.id] = symbol;
+        displayController.update(symbol,position);
     };
 
     const clear = () => {
@@ -159,20 +196,24 @@ const game = (() => {
         gameOver=false;
     };
 
-    const play = (position) => {
+    const play = (player,position) => {
         let winnersymbol;
-        if (!gameOver) {
-            let player;
-            turn ? player = player1 : player = player2;
-            gameBoard.changeValue(player.symbol,position);
-            turn = !turn;
-            displayController.changeTurn(turn);
-            playCount++;
-            if(playCount >= 5) { //Only start checking Winner after 5th play, before then there can be none
-                winnersymbol = checkWinner();
-                if (winnersymbol) endGame(winnersymbol);
+        if (!gameOver) { //Only play if game is not over
+            if (!gameBoard.display()[position.id]) { //Only change the value if that gameboard position is null
+                gameBoard.changeValue(player.symbol,position);
+                playCount++;
+                if(playCount >= 5) { //Only start checking Winner after 5th play, before then there can be none
+                    winnersymbol = checkWinner(gameBoard.display());
+                    if (winnersymbol) return endGame(winnersymbol); //Returns so if the game is over the turn doesnt change
+                }
+                turn = !turn;
+                displayController.changeTurn(turn);
             }
         }
+    };
+    
+    const choice = (position) => {
+        if (turn) play(player1,position);
     };
     
     const endGame = (winnersymbol) => {
@@ -184,8 +225,7 @@ const game = (() => {
         if (winner.name) winner.increaseScore();
     };
 
-    const checkWinner = () => {
-        const values = gameBoard.display();
+    const checkWinner = (values) => {
         let winner;
         //Check Rows
         const checkRow = (() => {
@@ -224,11 +264,100 @@ const game = (() => {
         if (player1.name) {
             gameBoard.clear();
             displayController.clear();
+            AI.stopTimer();
             gameOver=false;
             turn = Math.random() >= 0.5; //Random start
             displayController.changeTurn(turn);
         }
     };
 
-    return {start,play,reset}
+    return {start,play,choice,reset,checkWinner}
+})();
+
+//---------------------- AI --------------------
+const AI = (() => {
+    let _timer;
+    const play = (player) => {
+        _timer = (game.difficulty==="easy") ? setTimeout(()=> {playRandom(player)}, 1500) : (playSmart(player))();
+    };
+
+    const stopTimer = () => {
+        clearTimeout(_timer);
+    }
+
+    const getOptions = (game) => {
+        const options = [];
+        for(let i=0; i<9; i++) { 
+            if (game[i] === null)
+            options.push(i);
+        }
+        return options
+    }
+
+    const playRandom = (player) => {
+        const gameboard = gameBoard.display(); //Gets the gameboard array
+        const options = getOptions(gameboard);
+        const random = Math.floor(options.length*Math.random());
+        const choice = options[random]; //Selects the value
+        let cell = document.getElementById(choice); //Gets the html element which has the ID of our choice
+        game.play(player,cell);
+    };
+
+    const playSmart = (player) => {
+        const currentgameboard = gameBoard.display(); //Gets the gameboard array
+        
+        const options = getOptions(currentgameboard); //Makes an array listing all possible solutions where he can place his symbol
+        if (options.length === 9) return playRandom(player); //If start of game choose random
+
+        else {
+            const choice = minimax(currentgameboard,player);
+            let cell = document.getElementById(choice.position); //Gets the html element which has the ID of our choice
+            game.play(player,cell);
+        }
+    };
+
+    const minimax = (current,player) => {
+        const max_player = player2; //The player who wants to have max score is the AI
+        const other_player = (player.symbol===player2.symbol) ? player1 : player2; //If player is AI other player is player1, if player is player1 other player is AI (player2)
+
+        //Get possible options and empty squares
+        const options = getOptions(current);
+        const emptysquares = options.length;
+
+        //Check if previous move was winner
+        let winnersymbol = game.checkWinner(current);
+        if (winnersymbol === other_player.symbol) {
+            if (other_player === max_player) {
+                return {position: null,score: 1*(emptysquares+1)};
+            } else return {position: null,score: -1*(emptysquares+1)};
+        } else if (emptysquares === 0) return {position: null,score: 0};
+        
+        let best;
+        if (player === player2) best = {position: null,score: -Infinity}; //each score should maximize
+        else best = {position: null,score: +Infinity} //each score should minimize
+        
+
+        options.forEach(e => {
+            current[e] = player.symbol; //Assigns to that position the current player symbol
+            let sim_score = minimax(current,other_player); //For each option available it runs minimax again simulating the other player play, this cycle will repeat itself
+
+            //Undo moves
+            current[e] = null;
+            winnersymbol = null;
+            sim_score.position = e; //Assign to the sim_score the position ID that gave that score
+
+            if (player === max_player) {
+                if (sim_score.score > best.score) {  //Choose the maximum score if current player is is AI
+                    best = sim_score;
+                }
+            } else {
+                if (sim_score.score < best.score) { //Choose the minimum score if current player is not AI
+                    best = sim_score;
+                }
+            }
+        });
+        return best; //Return the best score
+    };
+
+    return {play,stopTimer};
 })();

@@ -33,10 +33,11 @@ main {
     text-align: center;
     background: url("images/white-paper-texture.jpg");
     width: 50vw;
-    margin: auto;
     border-radius: 5px;
-    position: relative;
-    top: 5vh;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
 }
 
 h1 {
@@ -140,6 +141,10 @@ h1 {
     border: 1px solid #ffffff8c;
     outline: none;
 }
+
+#difficultydiv {
+    display: flex;
+  }
 
 #player1,#player2 {
     display: inline-flex;
